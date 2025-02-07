@@ -57,7 +57,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ${{ steps.version_info.outputs.latest_tag }}.txt
-        key: cached_version
+        key: builtflag-${{ steps.version_info.outputs.latest_tag }}
     - name: Should we start new build?
       id: should_build
       if: steps.version_check.outputs.cache-hit != 'true'
