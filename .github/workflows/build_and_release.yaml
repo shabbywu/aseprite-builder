@@ -12,7 +12,7 @@ env:
 
 jobs:
   check-version:
-    name: Check latest Aseprite release
+    name: Check Aseprite release
     runs-on: ubuntu-latest
     outputs:
       download_url: ${{ steps.version_info.outputs.download_url }}
