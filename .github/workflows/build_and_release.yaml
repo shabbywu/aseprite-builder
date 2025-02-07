@@ -126,7 +126,7 @@ jobs:
         run: |
           export enable_ccache=off
           export laf_backend=skia
-          export enable_scripting=off
+          export enable_scripting=on
 
           if [[ "${{ runner.os }}" == "macOS" ]] ; then
             export skia_arch=arm64
