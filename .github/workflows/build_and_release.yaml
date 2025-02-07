@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       download_url: ${{ steps.version_info.outputs.download_url }}
-      latest_tag: ${{ steps.version_info.outputs.latest_tag }}
+      aseprite_tag: ${{ steps.version_info.outputs.aseprite_tag }}
       should_build: ${{ steps.should_build.outputs.should_build }}
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
@@ -32,14 +32,14 @@ jobs:
         fi
 
         data=$(curl -sL https://api.github.com/repos/aseprite/aseprite/releases/${release_id})
-        LATEST_TAG=$(echo "${data}" | jq -r '.tag_name')
+        TAG_NAME=$(echo "${data}" | jq -r '.tag_name')
         DOWNLOAD_URL=$(echo "${data}" | jq -r '.assets[].browser_download_url')
         VERSION_INFO=$(echo "${data}" | jq -r '.body')
 
-        echo "${LATEST_TAG}" > ${LATEST_TAG}.txt
+        echo "${TAG_NAME}" > ${TAG_NAME}.txt
         {
-          echo 'latest_tag<<EOF'
-          echo ${LATEST_TAG}
+          echo 'aseprite_tag<<EOF'
+          echo ${TAG_NAME}
           echo EOF
         } >> "$GITHUB_OUTPUT"
         {
@@ -56,8 +56,8 @@ jobs:
       id: version_check
       uses: actions/cache@v4
       with:
-        path: ${{ steps.version_info.outputs.latest_tag }}.txt
-        key: builtflag-${{ steps.version_info.outputs.latest_tag }}
+        path: ${{ steps.version_info.outputs.aseprite_tag }}.txt
+        key: builtflag-${{ steps.version_info.outputs.aseprite_tag }}
     - name: Should we start new build?
       id: should_build
       if: steps.version_check.outputs.cache-hit != 'true'
@@ -69,8 +69,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ steps.version_info.outputs.latest_tag }}
-        release_name: Release Aseprite ${{ steps.version_info.outputs.latest_tag }}
+        tag_name: ${{ steps.version_info.outputs.aseprite_tag }}
+        release_name: Release Aseprite ${{ steps.version_info.outputs.aseprite_tag }}
         body: |
           ${{ steps.version_info.outputs.version_info }}
         draft: true
@@ -157,13 +157,13 @@ jobs:
         run: echo '# This file is here so Aseprite behaves as a portable program' > aseprite.ini
       - name: Create release
         working-directory: aseprite/build/bin
-        run: 7z -tzip a Aseprite-${{ needs.check-version.outputs.latest_tag }}-${{ runner.os }}.zip *
+        run: 7z -tzip a Aseprite-${{ needs.check-version.outputs.aseprite_tag }}-${{ runner.os }}.zip *
       - name: Upload release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.check-version.outputs.upload_url }}
-          asset_path: aseprite/build/bin/Aseprite-${{ needs.check-version.outputs.latest_tag }}-${{ runner.os }}.zip
-          asset_name: Aseprite-${{ needs.check-version.outputs.latest_tag }}-${{ runner.os }}.zip
+          asset_path: aseprite/build/bin/Aseprite-${{ needs.check-version.outputs.aseprite_tag }}-${{ runner.os }}.zip
+          asset_name: Aseprite-${{ needs.check-version.outputs.aseprite_tag }}-${{ runner.os }}.zip
           asset_content_type: application/zip
