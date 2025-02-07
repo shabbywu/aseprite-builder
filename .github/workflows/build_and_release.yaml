@@ -2,6 +2,11 @@ name: Build and release Aseprite
 
 on:
   workflow_dispatch:
+    inputs:
+      aseprite-tag: 
+        required: true
+        default: latest
+
 env:
   BUILD_TYPE: Release
 
@@ -17,8 +22,16 @@ jobs:
     steps:
     - name: Get latest version info
       id: version_info
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
       run: |
-        data=$(curl -sL https://api.github.com/repos/aseprite/aseprite/releases/latest)
+        if [[ "${{ github.event.inputs.message }}" == "latest" ]] ; then
+          release_id='latest'
+        else
+          release_id=$(curl https://api.github.com/graphql -X POST -H "Authorization: bearer ${GITHUB_TOKEN}" -d '{"query":"query { repository ( owner: \"aseprite\", name: \"aseprite\" ) { release ( tagName: \"v1.3.12\" ) { databaseId createdAt }} }"}' | jq -r '.data.repository.release.databaseId')
+        fi
+
+        data=$(curl -sL https://api.github.com/repos/aseprite/aseprite/releases/${release_id})
         LATEST_TAG=$(echo "${data}" | jq -r '.tag_name')
         DOWNLOAD_URL=$(echo "${data}" | jq -r '.assets[].browser_download_url')
         VERSION_INFO=$(echo "${data}" | jq -r '.body')
