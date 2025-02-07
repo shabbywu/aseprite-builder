@@ -25,10 +25,10 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
       run: |
-        if [[ "${{ github.event.inputs.message }}" == "latest" ]] ; then
+        if [[ "${{ github.event.inputs.aseprite-tag }}" == "latest" ]] ; then
           release_id='latest'
         else
-          release_id=$(curl https://api.github.com/graphql -X POST -H "Authorization: bearer ${GITHUB_TOKEN}" -d '{"query":"query { repository ( owner: \"aseprite\", name: \"aseprite\" ) { release ( tagName: \"v1.3.12\" ) { databaseId createdAt }} }"}' | jq -r '.data.repository.release.databaseId')
+          release_id=$(curl https://api.github.com/graphql -X POST -H "Authorization: bearer ${GITHUB_TOKEN}" -d '{"query":"query { repository ( owner: \"aseprite\", name: \"aseprite\" ) { release ( tagName: \"${{ github.event.inputs.aseprite-tag }}\" ) { databaseId createdAt }} }"}' | jq -r '.data.repository.release.databaseId')
         fi
 
         data=$(curl -sL https://api.github.com/repos/aseprite/aseprite/releases/${release_id})
